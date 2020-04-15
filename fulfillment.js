@@ -71,7 +71,8 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
     console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
     const OUTPUT_CONTEXTS = request.body.queryResult.outputContexts;
-    const EMAIL = OUTPUT_CONTEXTS[OUTPUT_CONTEXTS.length - 1].parameters["email.original"];
+    // commented out below parameter for reference 
+    // const EMAIL = OUTPUT_CONTEXTS[OUTPUT_CONTEXTS.length - 1].parameters["email.original"];
     const ISSUE_CATEGORY = OUTPUT_CONTEXTS[OUTPUT_CONTEXTS.length - 1].parameters.category;
     const ISSUE_TEXT = request.body.queryResult.queryText;
  
@@ -98,21 +99,21 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
         const ETA_PREDICTION = QUERY_RESULT[0].predicted_label;
     
         //Format the Output Message
-        agent.add( EMAIL + ", your ticket has been created. Someone will you contact shortly. " +
+        agent.add("I don't have a quick answer for you, so I've created a task in our system. Someone will contact you shortly. " +
             " The estimated response time is " + ETA_PREDICTION  + " days."
         );
         agent.add(
           new Card({
             title:
               "New " + ISSUE_CATEGORY +
-              " Request for " + EMAIL +
+              " Task " +
               " (Estimated Response Time: " + ETA_PREDICTION  +
               " days)",
             imageUrl:
-              "https://developers.google.com/actions/images/badges/XPM_BADGING_GoogleAssistant_VER.png",
+              "https://github.com/aniyip/dialogflow/blob/master/MTLogo.JPG",
             text: "Issue description: " + ISSUE_TEXT,
-            buttonText: "Go to Ticket Record",
-            buttonUrl: "https://assistant.google.com/"
+            buttonText: "Go to Task",
+            buttonUrl: "https://docs.google.com/spreadsheets/d/1GZXH_OszxgjGNnba51vMh1j1-dsupl-85myktQHO8dQ/edit?usp=sharing"
           })
         );
         agent.setContext({
