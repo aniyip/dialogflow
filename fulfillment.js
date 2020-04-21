@@ -927,6 +927,30 @@ function actionMapper(agent) {
   
     /******** End COVID-19 ********/
 
+  
+    /******** Begin List Commands ********/
+
+
+const CARD_CMD1 = [{
+  'type': 'accordion',
+  'text':
+      'Here are some common commands you can use to review machine info:<ul><li>Check uptime or for hotfix	<b>systeminfo</b></li><li>Check for dirty bit   <b>fsutil dirty query "Drive Letter":</b></li></ul><br>You can see the full list here: <a href="https://confluence.meditech.com/display/CSTS/Useful+Run+Commands" target="_blank">Useful Commands Confluence Page</a>',
+  'title': 'Check machine info',
+}];
+
+const CARD_CMD2 = [{
+  'type': 'accordion',
+  'text':
+      'Before executing these commands, you may want to have some peer review for good measure:<ul><li>Safely remove a directory:	<b>rmdir /s "path"</b></li><li>End multiple processes 	<b>taskkill /f /im "process-name.exe"</b></li></ul><br>You can see the full list here: <a href="https://confluence.meditech.com/display/CSTS/Useful+Run+Commands" target="_blank">Useful Commands Confluence Page</a>',
+  'title': 'Perform an action',
+}];
+  
+const CARD_CMD3 = [{
+  'type': 'accordion',
+  'text':
+      'When the machine you want to perform an action on is unavailable, try these commands:<ul><li>Show list of memory-consuming tasks   <b>tasklist /S <remote_server_name> /V /FI "MEMUSAGE gt 10000"</b></li><li>End process by its name   <b>taskkill /S <remote_server_name> /IM <process_image_name> /F</b></li><li></li></ul><br>You can see the full list here: <a href="https://confluence.meditech.com/display/CSTS/Useful+Run+Commands" target="_blank">Useful Commands Confluence Page</a>',
+  'title': 'Perform an action remotely',
+}];
 
   
   // // Uncomment and edit to make your own intent handler
