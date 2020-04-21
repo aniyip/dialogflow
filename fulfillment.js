@@ -70,6 +70,25 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     }
   }
 
+exports.dialogflowFirebaseFulfillment =
+    functions.https.onRequest((request, response) => {
+      if (!!request.body.queryResult.fulfillmentMessages) {
+        request.body.queryResult.fulfillmentMessages =
+            request.body.queryResult.fulfillmentMessages.map(m => {
+              if (!m.platform) {
+                // Set the platform to UNSPECIFIED instead of null.
+                m.platform = 'PLATFORM_UNSPECIFIED';
+              }
+              return m;
+            });
+      }
+
+      const agent = new WebhookClient({request, response});
+      console.log(
+          'Dialogflow Request headers: ' + JSON.stringify(request.headers));
+      console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
+
+
   /******** Begin BigQuery ********/
   
    function ticketCollection(agent) {
@@ -555,7 +574,7 @@ function queryCovid19dataset(tableName, country) {
   }
 
   // Run the query.
-  const bigqueryClient = new BigQuery();
+  const bigqueryClient = new BIGQUERY();
   return bigqueryClient
       .query({
         query: totalQuery,
@@ -908,23 +927,6 @@ function actionMapper(agent) {
   
     /******** End COVID-19 ********/
 
-exports.dialogflowFirebaseFulfillment =
-    functions.https.onRequest((request, response) => {
-      if (!!request.body.queryResult.fulfillmentMessages) {
-        request.body.queryResult.fulfillmentMessages =
-            request.body.queryResult.fulfillmentMessages.map(m => {
-              if (!m.platform) {
-                // Set the platform to UNSPECIFIED instead of null.
-                m.platform = 'PLATFORM_UNSPECIFIED';
-              }
-              return m;
-            });
-      }
-
-      const agent = new WebhookClient({request, response});
-      console.log(
-          'Dialogflow Request headers: ' + JSON.stringify(request.headers));
-      console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
 
   
   // // Uncomment and edit to make your own intent handler
