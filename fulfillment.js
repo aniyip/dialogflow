@@ -3,6 +3,7 @@
 'use strict';
  
 const functions = require('firebase-functions');
+const {google} = require('googleapis');
 const {WebhookClient} = require('dialogflow-fulfillment');
 const {Payload} = require('dialogflow-fulfillment');
 const {Card, Suggestion} = require('dialogflow-fulfillment');
@@ -13,6 +14,33 @@ const BIGQUERY_CLIENT = new BIGQUERY({
 projectId: "team-9-nbc" 
 });
 
+  // from created cfredentials in JSON file
+  const calendarId = "meditech.com_frak6p1ntg77kdlv3jrmrkb1u4@group.calendar.google.com";
+  const serviceAccount = {
+  "type": "service_account",
+  "project_id": "team-9-nbc",
+  "private_key_id": "809156682c423ea5bc1a96b9aca8a160c65a7fb7",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDSxUF+qUJL/+UL\n5bJ2371Dytu0Jj/s4oT09nAwmrcuKyBrwEwL0cuht4BjI4uwLoZLkR32y5Q+AT56\nb4GXM+E4zEX1j4drH8Ei/rnJYnGvwVhSMVvNEd9tEt1EnmPcBYHHN46VbTiykfg2\nEQ/RnXPxg5aPY3sIBkFNEqgb77RlonPKOUwnkDk2zBJnoidn4Xp9f6MpxDxzsNn9\n5bQ+bg795mwWPshYa59B644uc8DAmKI2FAY8m0DEt5vd/ZzznPsA8fzdOn0eQ5WT\nzD4AxRkOcoAD/k63VctB3QBF1zd3WNWrARKVIMljtR2X3eozhzmkm4lZLLVt+3WK\n8xTGLG7lAgMBAAECggEADiYmzOlw5WgyyJctYVSIwJXMJO5SaUUVlto6UtD4DhXg\nEcuxbzOwv1TxvfYDaRrechE2WTx2Yak0uARnRy645la0NZViilrx3LcL4syEhD9u\n/emJV51lCc3z46jcXEdUXHrKzBYucbJh3sNLdA9lWqeyQkLz3eiJlrJzbZisXAwq\nF8Y1QOdqSg7DD/Q+IVLc4WTr17zn4Vh2kceyml0n0Li8oR0qeCPdZs9Nf6BDueN2\nP3BM2coHOHmi+wCk9Avsd+eNXPk0PGuHFCVdQ0RcEOh45cQk7MT//zZPt3LSWAvO\nEdmE8fk9uq30V+3bBEoddZj4+knHAGRPIolbK5U4EQKBgQDsBcXNxChveech0LCi\nQLrp+NA1DfHnYQf2M1zZfb7+w1FFkFf0nGU/28slu2eyACatIIpM8iT2R9S8SPd4\nIgzZbTCL2juHg9BLIJpMFvO1UVUkv9EBKLodZNeISiusNjIHHrKUQIFGKYlRue/d\ng7tBvlssjUeu0kYRKH5fD5rz/QKBgQDknFAOKleDXExrww/F8R+DCGCSLR5C50oT\noxE51DhZO75MYiCwzblMtdU16rmzVCy0h6SIJUHzLQfpsuWAr+EKkto+RRgVqG3o\nkSLomHagF/lDC8o53YQY6vCGZhC+54hh0GHECmwIe70e4SXTiYe6Wk/sa1/QzZ28\nqlklQ5C3CQKBgBq8jKvCjNIT/RrXiSrYKlRW2z8nVT/gvgYly17X38r8VTiMIWqU\nTOPvAhREJnsDiV4TUZdl1soPWQn7Og1hzhLTS6yMDDJNvErGZrQ35WOk0wBWulZn\nRq4NvlyyCkB34zLrR0+D/yDzk5qudX2ibpQD/FAPsQ8cwtMuwyIBoowBAoGAOKR6\nOWhIUqXV0YV9LQA3XJIAy3ceXllMQ11N8VQhugpRdj+B9gyi8tzCvR8xb7tVcE2D\neLAyjPwFT+QhdScezS3hoTghZYxb3xnG2nacPcJy4ifTrU6zYjEj80jqsUJQyluF\nPbuPVPLDwxjp9GXJGWUzFFLuZJ/ti0dx2wfInXECgYEAvorFVpLZ8lO+HXIis1SH\nIQnB2sz8KgCnc4hSWRVeopYChwoJikwi9FSRvtVXf69iybgN/nQa0CeZmZw9BDbt\nqK9F9FmxS9OSec7Hj/e1o/g3Np/fNAMsvUnpP25AnGk0LGWpw5dM0m0S028KEJAI\ny7j98cnWGixY36/eknNSdCE=\n-----END PRIVATE KEY-----\n",
+  "client_email": "appointment-scheduler@team-9-nbc.iam.gserviceaccount.com",
+  "client_id": "106265688430133998484",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/appointment-scheduler%40team-9-nbc.iam.gserviceaccount.com"
+}; 
+
+  // Set up Google Calendar Service account credentials
+const serviceAccountAuth = new google.auth.JWT({
+ email: serviceAccount.client_email,
+ key: serviceAccount.private_key,
+ scopes: 'https://www.googleapis.com/auth/calendar'
+});
+
+const calendar = google.calendar('v3');
+  
+  const timeZone = 'US/Eastern';
+const timeZoneOffset = '-04:00';
+
 process.env.DEBUG = 'dialogflow:debug'; // enables lib debugging statements
  
 /*
@@ -21,6 +49,25 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
   console.log('Dialogflow Request headers: ' + JSON.stringify(request.headers));
   console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
 */
+
+
+exports.dialogflowFirebaseFulfillment =
+    functions.https.onRequest((request, response) => {
+      if (!!request.body.queryResult.fulfillmentMessages) {
+        request.body.queryResult.fulfillmentMessages =
+            request.body.queryResult.fulfillmentMessages.map(m => {
+              if (!m.platform) {
+                // Set the platform to UNSPECIFIED instead of null.
+                m.platform = 'PLATFORM_UNSPECIFIED';
+              }
+              return m;
+            });
+      }
+
+      const agent = new WebhookClient({request, response});
+      console.log(
+          'Dialogflow Request headers: ' + JSON.stringify(request.headers));
+      console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
 
   function welcome(agent) {
     agent.ask(`Hello there! My name is QA Bot, and I'm your MEDITECH helper today. How can I help you?`);
@@ -70,25 +117,8 @@ exports.dialogflowFirebaseFulfillment = functions.https.onRequest((request, resp
     }
   }
 
-exports.dialogflowFirebaseFulfillment =
-    functions.https.onRequest((request, response) => {
-      if (!!request.body.queryResult.fulfillmentMessages) {
-        request.body.queryResult.fulfillmentMessages =
-            request.body.queryResult.fulfillmentMessages.map(m => {
-              if (!m.platform) {
-                // Set the platform to UNSPECIFIED instead of null.
-                m.platform = 'PLATFORM_UNSPECIFIED';
-              }
-              return m;
-            });
-      }
-
-      const agent = new WebhookClient({request, response});
-      console.log(
-          'Dialogflow Request headers: ' + JSON.stringify(request.headers));
-      console.log('Dialogflow Request body: ' + JSON.stringify(request.body));
-
-
+  
+  
   /******** Begin BigQuery ********/
   
    function ticketCollection(agent) {
@@ -928,31 +958,77 @@ function actionMapper(agent) {
     /******** End COVID-19 ********/
 
   
-    /******** Begin List Commands ********/
-
-
-const CARD_CMD1 = [{
-  'type': 'accordion',
-  'text':
-      'Here are some common commands you can use to review machine info:<ul><li>Check uptime or for hotfix	<b>systeminfo</b></li><li>Check for dirty bit   <b>fsutil dirty query "Drive Letter":</b></li></ul><br>You can see the full list here: <a href="https://confluence.meditech.com/display/CSTS/Useful+Run+Commands" target="_blank">Useful Commands Confluence Page</a>',
-  'title': 'Check machine info',
-}];
-
-const CARD_CMD2 = [{
-  'type': 'accordion',
-  'text':
-      'Before executing these commands, you may want to have some peer review for good measure:<ul><li>Safely remove a directory:	<b>rmdir /s "path"</b></li><li>End multiple processes 	<b>taskkill /f /im "process-name.exe"</b></li></ul><br>You can see the full list here: <a href="https://confluence.meditech.com/display/CSTS/Useful+Run+Commands" target="_blank">Useful Commands Confluence Page</a>',
-  'title': 'Perform an action',
-}];
+    /******** Begin Appointment Scheduler ********/
   
-const CARD_CMD3 = [{
-  'type': 'accordion',
-  'text':
-      'When the machine you want to perform an action on is unavailable, try these commands:<ul><li>Show list of memory-consuming tasks   <b>tasklist /S <remote_server_name> /V /FI "MEMUSAGE gt 10000"</b></li><li>End process by its name   <b>taskkill /S <remote_server_name> /IM <process_image_name> /F</b></li><li></li></ul><br>You can see the full list here: <a href="https://confluence.meditech.com/display/CSTS/Useful+Run+Commands" target="_blank">Useful Commands Confluence Page</a>',
-  'title': 'Perform an action remotely',
-}];
 
   
+     const appointment_type = agent.parameters.AppointmentType;
+  function makeAppointment (agent) {
+    // Use the Dialogflow's date and time parameters to create Javascript Date instances, 'dateTimeStart' and 'dateTimeEnd',
+    // which are used to specify the appointment's time.
+    const appointmentDuration = 1;// Define the length of the appointment to be one hour.
+    const dateTimeStart = convertParametersDate(agent.parameters.date, agent.parameters.time);
+    const dateTimeEnd = addHours(dateTimeStart, appointmentDuration);
+    const appointmentTimeString = getLocaleTimeString(dateTimeStart);
+    const appointmentDateString = getLocaleDateString(dateTimeStart);
+    // Check the availability of the time slot and set up an appointment if the time slot is available on the calendar
+    return createCalendarEvent(dateTimeStart, dateTimeEnd).then(() => {
+      agent.add(`Got it. I have your appointment scheduled on ${appointmentDateString} at ${appointmentTimeString}. See you soon. Good-bye.`);
+    }).catch(() => {
+      agent.add(`Sorry, we're booked on ${appointmentDateString} at ${appointmentTimeString}. Is there anything else I can do for you?`);
+    });
+  }
+  
+  //Creates calendar event in Google Calendar
+function createCalendarEvent (dateTimeStart, dateTimeEnd) {
+  return new Promise((resolve, reject) => {
+    calendar.events.list({  // List all events in the specified time period
+      auth: serviceAccountAuth,
+      calendarId: calendarId,
+      timeMin: dateTimeStart.toISOString(),
+      timeMax: dateTimeEnd.toISOString()
+    }, (err, calendarResponse) => {
+      // Check if there exists any event on the calendar given the specified the time period
+      if (err || calendarResponse.data.items.length > 0) {
+        reject(err || new Error('Requested time conflicts with another appointment'));
+      } else {
+        // Create an event for the requested time period
+        calendar.events.insert({ auth: serviceAccountAuth,
+          calendarId: calendarId,
+ resource: {summary: appointment_type +' Appointment', description: appointment_type,
+           start: {dateTime: dateTimeStart},
+           end: {dateTime: dateTimeEnd}}
+        }, (err, event) => {
+          err ? reject(err) : resolve(event);
+        }
+        );
+      }
+    });
+  });
+}
+  
+  // A helper function that receives Dialogflow's 'date' and 'time' parameters and creates a Date instance.
+function convertParametersDate(date, time){
+  return new Date(Date.parse(date.split('T')[0] + 'T' + time.split('T')[1].split('-')[0] + timeZoneOffset));
+}
+
+// A helper function that adds the integer value of 'hoursToAdd' to the Date instance 'dateObj' and returns a new Data instance.
+function addHours(dateObj, hoursToAdd){
+  return new Date(new Date(dateObj).setHours(dateObj.getHours() + hoursToAdd));
+}
+
+// A helper function that converts the Date instance 'dateObj' into a string that represents this time in English.
+function getLocaleTimeString(dateObj){
+  return dateObj.toLocaleTimeString('en-US', { hour: 'numeric', hour12: true, timeZone: timeZone });
+}
+
+// A helper function that converts the Date instance 'dateObj' into a string that represents this date in English. 
+function getLocaleDateString(dateObj){
+  return dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', timeZone: timeZone });
+}
+  
+      /******** End Appointment Scheduler ********/
+
   // // Uncomment and edit to make your own intent handler
   // // uncomment `intentMap.set('your intent name here', yourFunctionHandler);`
   // // below to get this function to be run when a Dialogflow intent is matched
@@ -989,6 +1065,7 @@ const CARD_CMD3 = [{
   intentMap.set('A.Acronym Converter', acronymConverter);
   intentMap.set('A.Function Lookup', functionLookup);
   intentMap.set("A.Submit Ticket - Issue Category", ticketCollection);
+  intentMap.set("A.Schedule Downtime", makeAppointment);
   intentMap.set('coronavirus.closure', openHours);
   intentMap.set('coronavirus.confirmed_cases', confirmedCases);
   intentMap.set('coronavirus.death', death);
